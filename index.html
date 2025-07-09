@@ -1,65 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Nothing</title>
+  <meta charset="UTF-8" />
+  <title>Presence Status Widget</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 🌸 Soft Button Styling -->
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(to right, #fff1f5, #fce4ec);
+    }
+    h1 {
+      color: #ff6f91;
+    }
+    #presence-widget {
+      margin-top: 2rem;
+    }
+    .presence-btn {
+      padding: 0.6rem 1.2rem;
+      margin: 1rem 0.6rem;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 30px;
+      background: #f0f0f0;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    }
+    .presence-btn.online {
+      background: #d4edda;
+      color: #155724;
+      box-shadow: 0 0 8px rgba(0, 128, 0, 0.3);
+    }
+  </style>
 </head>
-<style type="text/css">
-.presence-btn {
-  padding: 0.4rem 0.8rem;
-  margin: 0.5rem;
-  border: none;
-  border-radius: 20px;
-  background: #e0e0e0;
-  cursor: pointer;
-  transition: background 0.3s, color 0.3s;
-}
-.presence-btn.online {
-  background: #d4edda;
-  color: #155724;
-}
-</style>
 <body>
-<!-- Place after your header or birthday section -->
-<div id="presence-widget">
-  <button id="btnAbir"  class="presence-btn">Abir: 🔘 offline</button>
-  <button id="btnMaria" class="presence-btn">Maria: 🔘 offline</button>
-</div>
-</body>
-<script type="text/javascript">
-<script>
-  const API = 'https://active.is-best.net/';
-  const btnA = document.getElementById('btnAbir');
-  const btnM = document.getElementById('btnMaria');
 
-  // Poll status every 3s
-  async function fetchStatus() {
-    const res  = await fetch(API+'get_status.php');
-    const data = await res.json();
-    updateBtn(btnA, data.abir);
-    updateBtn(btnM, data.maria);
-  }
-  setInterval(fetchStatus, 3000);
-  fetchStatus();
+  <h1>💞 Presence Status Panel</h1>
 
-  // Toggle status on click
-  btnA.addEventListener('click', () => toggle('abir'));
-  btnM.addEventListener('click', () => toggle('maria'));
+  <div id="presence-widget">
+    <button id="btnAbir" class="presence-btn">Abir: 🔘 offline</button>
+    <button id="btnMaria" class="presence-btn">Maria: 🔘 offline</button>
+  </div>
 
-  async function toggle(user) {
-    const btn   = user==='abir'?btnA:btnM;
-    const state = btn.classList.contains('online') ? 0 : 1;
-    await fetch(`${API}set_status.php?user=${user}&status=${state}`);
+  <!-- ✅ JavaScript Logic -->
+  <script>
+    const API = 'https://active.is-best.net/';
+    const btnA = document.getElementById('btnAbir');
+    const btnM = document.getElementById('btnMaria');
+
+    // Update button style and text based on online state
+    function updateBtn(el, isOnline) {
+      el.classList.toggle('online', isOnline === 1);
+      el.textContent = el.id === 'btnAbir'
+        ? `Abir: ${isOnline ? '🟢 online' : '🔘 offline'}`
+        : `Maria: ${isOnline ? '🟢 online' : '🔘 offline'}`;
+    }
+
+    // Poll status.json every 3 seconds
+    async function fetchStatus() {
+      try {
+        const res = await fetch(API + 'get_status.php');
+        const data = await res.json();
+        updateBtn(btnA, data.abir);
+        updateBtn(btnM, data.maria);
+      } catch (e) {
+        console.error("Error fetching status:", e);
+      }
+    }
+
+    // Send status change on button click
+    async function toggle(user) {
+      const btn = user === 'abir' ? btnA : btnM;
+      const state = btn.classList.contains('online') ? 0 : 1;
+      try {
+        await fetch(`${API}set_status.php?user=${user}&status=${state}`);
+        fetchStatus();
+        alert(`${user.charAt(0).toUpperCase() + user.slice(1)} is now ${state ? 'online' : 'offline'} 💬`);
+      } catch (e) {
+        console.error("Error toggling status:", e);
+      }
+    }
+
+    // Add click handlers
+    btnA.addEventListener('click', () => toggle('abir'));
+    btnM.addEventListener('click', () => toggle('maria'));
+
+    // Start polling
+    setInterval(fetchStatus, 3000);
     fetchStatus();
-    alert(`${user.charAt(0).toUpperCase()+user.slice(1)} is now `+
-          (state ? 'online':'offline'));
-  }
+  </script>
 
-  function updateBtn(el, isOnline) {
-    el.classList.toggle('online', isOnline===1);
-    el.textContent = el.id==='btnAbir'
-      ? `Abir: ${isOnline? '🟢 online':'🔘 offline'}`
-      : `Maria: ${isOnline? '🟢 online':'🔘 offline'}`;
-  }
-</script>
-</script>
+</body>
 </html>
